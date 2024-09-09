@@ -20,13 +20,6 @@ const fetcher = (url: string) => {
   return api.get(url).then((res) => res.data);
 };
 
-const url = "profile";
-const data = api.get(url).then((res) => {
-  const data = res.data;
-  console.log(data);
-  return res.data;
-});
-
 const fetcfWithParams = ([url, params]: [string, Record<string, any>]) => {
   return api
     .get(url, {
@@ -35,11 +28,10 @@ const fetcfWithParams = ([url, params]: [string, Record<string, any>]) => {
     .then((res) => res.data);
 };
 
-// useSWR の返り値は {data, error}
-
+// useSWRのラッパー
 const useHttp = () => {
   return {
-    get: <Data = any, Error = any>(
+    get: <Data, Error>(
       url: string | [string, ...unknown[]] | null,
       config?: SWRConfiguration,
     ) => {
@@ -52,45 +44,34 @@ const useHttp = () => {
       );
     },
 
-    getOnce: <RES = any, DATA = any>(
+    // AxiosのGETリクエストのラッパー
+    getOnce: <RES, DATA>(
       url: string,
       params?: DATA,
-      errorProcess?: (err: any) => void,
+      errorProcess?: (err: unknown) => void,
     ) => {
-      return new Promise<AxiosResponse<RES>>((resolve, reject) => {
-        api
-          .get<RES, AxiosResponse<RES>, DATA>(url, {
-            params,
-          })
-          .then((data) => {
-            resolve(data);
-          })
-          .catch((err) => {
-            if (errorProcess) {
-              errorProcess(err);
-            }
-            reject(err);
-          });
-      });
+      return api
+        .get<RES, AxiosResponse<RES>, DATA>(url, {
+          params,
+        })
+        .catch((err) => {
+          if (errorProcess) {
+            errorProcess(err);
+          }
+          throw Error(err);
+        });
     },
 
-    post: <RES = any, DATA = any>(
+    post: <RES, DATA>(
       url: string,
       data: DATA,
       errorProcess?: (err: any) => void,
     ) => {
-      return new Promise<AxiosResponse<RES>>((resolve, reject) => {
-        api
-          .post<RES, AxiosResponse<RES>, DATA>(url, data)
-          .then((data) => {
-            resolve(data);
-          })
-          .catch((err) => {
-            if (errorProcess) {
-              errorProcess(err);
-            }
-            reject(err);
-          });
+      return api.post<RES, AxiosResponse<RES>, DATA>(url, data).catch((err) => {
+        if (errorProcess) {
+          errorProcess(err);
+        }
+        throw Error(err);
       });
     },
 
@@ -99,18 +80,11 @@ const useHttp = () => {
       data: DATA,
       errorProcess?: (err: any) => void,
     ) => {
-      return new Promise<AxiosResponse<RES>>((resolve, reject) => {
-        api
-          .put<RES, AxiosResponse<RES>, DATA>(url, data)
-          .then((data) => {
-            resolve(data);
-          })
-          .catch((err) => {
-            if (errorProcess) {
-              errorProcess(err);
-            }
-            reject(err);
-          });
+      return api.put<RES, AxiosResponse<RES>, DATA>(url, data).catch((err) => {
+        if (errorProcess) {
+          errorProcess(err);
+        }
+        throw Error(err);
       });
     },
 
@@ -119,40 +93,30 @@ const useHttp = () => {
       params?: DATA,
       errorProcess?: (err: any) => void,
     ) => {
-      return new Promise<AxiosResponse<RES>>((resolve, reject) => {
-        api
-          .delete<RES, AxiosResponse<RES>, DATA>(url, {
-            params,
-          })
-          .then((data) => {
-            resolve(data);
-          })
-          .catch((err) => {
-            if (errorProcess) {
-              errorProcess(err);
-            }
-            reject(err);
-          });
-      });
+      return api
+        .delete<RES, AxiosResponse<RES>, DATA>(url, {
+          params,
+        })
+        .catch((err) => {
+          if (errorProcess) {
+            errorProcess(err);
+          }
+          throw Error(err);
+        });
     },
     patch: <RES = any, DATA = any>(
       url: string,
       data: DATA,
       errorProcess?: (err: any) => void,
     ) => {
-      return new Promise<AxiosResponse<RES>>((resolve, reject) => {
-        api
-          .patch<RES, AxiosResponse<RES>, DATA>(url, data)
-          .then((data) => {
-            resolve(data);
-          })
-          .catch((err) => {
-            if (errorProcess) {
-              errorProcess(err);
-            }
-            reject(err);
-          });
-      });
+      return api
+        .patch<RES, AxiosResponse<RES>, DATA>(url, data)
+        .catch((err) => {
+          if (errorProcess) {
+            errorProcess(err);
+          }
+          throw Error(err);
+        });
     },
   };
 };
