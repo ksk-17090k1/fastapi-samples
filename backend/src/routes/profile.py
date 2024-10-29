@@ -46,6 +46,12 @@ def get_profile(id: str):
     return profiles[id]
 
 
+# こんな感じでHTMLを返すこともできる
+# @app.get("/")
+# async def get():
+#     return HTMLResponse(html)
+
+
 @profile_router.post("/profile", response_model=Profile)
 def post_profile(profile: Profile):
     profile_encoded = jsonable_encoder(profile)
